@@ -30,9 +30,6 @@ class LoadTransformers(LLM):
             trust_remote_code=True
         )
         
-        if "cuda" not in device:
-            self.model.to(device)
-        
         self.model.eval()
     
     def _format_messages(self, messages: List[Message]) -> str:

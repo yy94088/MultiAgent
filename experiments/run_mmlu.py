@@ -39,8 +39,8 @@ def parse_args():
                         help="Number of optimization/inference rounds for one query")
     parser.add_argument('--pruning_rate', type=float, default=0.25,
                         help="The Rate of Pruning. Default 0.05.")
-    parser.add_argument('--llm_name', type=str, default="Qwen3-8B",
-                        help="Model name, None runs the default Qwen3-8B model")
+    parser.add_argument("--model_type", type=str, default="Qwen")
+    parser.add_argument("--llm_name", type=str, default="Qwen3-8B")
     parser.add_argument('--domain', type=str, default="mmlu",
                         help="Domain (the same as dataset name), default 'MMLU'")
     parser.add_argument('--decision_method', type=str, default="FinalRefer",
@@ -65,7 +65,7 @@ async def main():
     limit_questions = 153
     
     graph = Graph(domain=args.domain,
-                  llm_name="./model/"+args.llm_name,
+                  llm_name=args.model_type+"/"+args.llm_name,
                   agent_names=agent_names,
                   decision_method=decision_method,
                   optimized_spatial=args.optimized_spatial,

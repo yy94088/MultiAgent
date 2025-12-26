@@ -19,7 +19,7 @@ class LLMRegistry:
         return cls.registry.keys()
 
     @classmethod
-    def get(cls, model_name: Optional[str] = None, agent_id: int = None) -> LLM:
+    def get(cls, model_name: Optional[str] = None, agent_id: int = 0) -> LLM:
         """
         Get or create an LLM instance.
         If agent_id is provided, automatically assigns to available GPU.
