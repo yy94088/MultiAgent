@@ -3,30 +3,29 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from AgentPrune.llm.llm import LLM
 from AgentPrune.llm.format import Message
+from AgentPrune.llm.llm_registry import LLMRegistry
 
-
+@LLMRegistry.register('Qwen')
 class LoadTransformers(LLM):
     """
     Loading and using HuggingFace Transformer models.
     """
     
-    def __init__(self, model_name: str, device: str = "cuda:1"):
+    def __init__(self, model_name: str,device: str):
         """
         Initialize the LoadTransformers instance.
         
         Args:
             model_name: Path or name of the HuggingFace model
-            device: Device to load the model on (e.g., "cpu", "cuda:0")
         """
         self.model_name = model_name
         self.device = device
-        
         # Load tokenizer and model
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.float16 if "cuda" in device else torch.float32,
-            device_map=device if "cuda" in device else None,
+            torch_dtype=torch.bfloat16,
+            device_map=device,
             trust_remote_code=True
         )
         
@@ -84,7 +83,7 @@ class LoadTransformers(LLM):
         prompt = self._format_messages(messages)
         
         # Tokenize input
-        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
         
         # Generate
         with torch.no_grad():

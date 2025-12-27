@@ -2,14 +2,10 @@ import torch
 from typing import Optional
 from AgentPrune.llm.llm import LLM
 from class_registry import ClassRegistry
-from AgentPrune.llm.load_transformers import LoadTransformers
 
 class LLMRegistry:
     registry = ClassRegistry()
-    _last_used_gpu = -1
-    # Class-level cache for shared LLM instances
-    _llm_cache = {}
-
+    _last_used_gpu = 0
     @classmethod
     def register(cls, *args, **kwargs):
         return cls.registry.register(*args, **kwargs)
@@ -21,33 +17,12 @@ class LLMRegistry:
     @classmethod
     def get(cls, model_name: Optional[str] = None, agent_id: int = 0) -> LLM:
         """
-        Get or create an LLM instance.
-        If agent_id is provided, automatically assigns to available GPU.
-        Otherwise, creates shared instance (cached).
-        Args:
-            model_name: Model identifier
-            agent_id: Optional agent identifier for dedicated instance
-        Returns:
-            LLM instance
+        Create an LLM instance.
         """
-        print("agent_id", agent_id)
-        cache_key = f"{model_name}:agent_{agent_id}"
-        if cache_key in cls._llm_cache:
-            print("cache hit", cache_key)
-            return cls._llm_cache[cache_key]
-        
-        if torch.cuda.is_available():
-            num_gpus = torch.cuda.device_count()
-            gpu_id = cls._select_optimal_gpu()
-            device = f"cuda:{gpu_id}"
-        else:
-            device = "cpu"
-        print("cache hit", cache_key)
-        model = LoadTransformers(model_name, device=device)
-
-        cls._llm_cache[cache_key] = model
-            
-        return cls._llm_cache[cache_key]
+        gpu_id = cls._select_optimal_gpu()
+        device = f"cuda:{gpu_id}"
+        model = cls.registry.get('Qwen', model_name, device=device)
+        return model
     
     @classmethod
     def _select_optimal_gpu(cls, min_memory_mb: int = 1024) -> int:
