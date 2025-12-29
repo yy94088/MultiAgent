@@ -1,11 +1,13 @@
+import os
 from typing import List, Union, Optional
 import torch
+import copy
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from AgentPrune.llm.llm import LLM
 from AgentPrune.llm.format import Message
 from AgentPrune.llm.llm_registry import LLMRegistry
 
-@LLMRegistry.register('Qwen')
+@LLMRegistry.register('Qwen3')
 class LoadTransformers(LLM):
     """
     Loading and using HuggingFace Transformer models.
@@ -19,17 +21,24 @@ class LoadTransformers(LLM):
             model_name: Path or name of the HuggingFace model
         """
         self.model_name = model_name
-        self.device = device
+        self.abspath= "/home/wangchichu/Qwen/"
+        self.model_path = os.path.join(os.path.dirname(__file__), self.abspath, model_name)
         # Load tokenizer and model
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path, use_fast=True, padding_side="left", local_files_only=True)
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            torch_dtype=torch.bfloat16,
-            device_map=device,
+            self.model_path,
+            torch_dtype=(torch.bfloat16 if torch.cuda.is_available() else torch.float32),
             trust_remote_code=True
         )
-        
+        self.model.to(device)
         self.model.eval()
+    
+    def __deepcopy__(self, memo):
+        """
+        Custom deep copy behavior: returns the reference to itself instead of creating a new instance.
+        This avoids creating multiple LLM instances when deepcopying the graph, saving GPU memory.
+        """
+        return self
     
     def _format_messages(self, messages: List[Message]) -> str:
         """

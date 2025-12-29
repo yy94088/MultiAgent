@@ -8,9 +8,9 @@ from AgentPrune.tools.coding.python_executor import PyExecutor
 
 @AgentRegistry.register('FinalWriteCode')
 class FinalWriteCode(Node):
-    def __init__(self, id: str | None =None,  domain: str = "", llm_name: str = "",):
+    def __init__(self, id: str | None =None,  domain: str = "", llm_name: str = "", agent_id: int = None):
         super().__init__(id, "FinalWriteCode" ,domain, llm_name)
-        self.llm = LLMRegistry.get(llm_name)
+        self.llm = LLMRegistry.get(llm_name, agent_id=agent_id)
         self.prompt_set = PromptSetRegistry.get(domain)
 
     def extract_example(self, prompt: str) -> list:

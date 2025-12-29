@@ -40,7 +40,6 @@ def parse_args():
     parser = argparse.ArgumentParser(description="AgentPrune Experiments on gsm8k")
     parser.add_argument("--dataset_json", type=str, default="dataset/gsm8k/gsm8k.jsonl")
     parser.add_argument("--result_file", type=str, default=None)
-    parser.add_argument("--model_type", type=str, default="Qwen")
     parser.add_argument("--llm_name", type=str, default="Qwen3-8B")
     parser.add_argument('--mode', type=str, default='FullConnected',
                         choices=['DirectAnswer', 'FullConnected', 'Random', 'Chain','Debate','Layered','Star'],
@@ -82,7 +81,7 @@ async def main():
     decision_method = args.decision_method
     kwargs = get_kwargs(args.mode,len(agent_names))
     graph = Graph(domain="gsm8k",
-                  llm_name=args.model_type+"/"+args.llm_name,
+                  llm_name=args.llm_name,
                   agent_names=agent_names,
                   decision_method=decision_method,
                   optimized_spatial=args.optimized_spatial,
@@ -105,9 +104,9 @@ async def main():
             break
         
         for i_record, record in enumerate(current_batch):
-            realized_graph = copy.deepcopy(graph)
-            realized_graph.spatial_logits = graph.spatial_logits
-            realized_graph.temporal_logits = graph.temporal_logits
+            realized_graph = graph.shallow_copy()
+            realized_graph.spatial_logits = graph.spatial_logits.detach().clone()
+            realized_graph.temporal_logits = graph.temporal_logits.detach().clone()
             task = record["task"]
             step = record["step"]
             answer = record["answer"]

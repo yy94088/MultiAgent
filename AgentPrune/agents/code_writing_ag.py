@@ -8,9 +8,9 @@ from AgentPrune.tools.coding.python_executor import PyExecutor
 
 @AgentRegistry.register('CodeWritingAG')
 class CodeWritingAG(NodeAutoGen):
-    def __init__(self, id: str | None =None, role:str = None ,domain: str = "", llm_name: str = "",):
+    def __init__(self, id: str | None =None, role:str = None ,domain: str = "", llm_name: str = "", agent_id: int = None):
         super().__init__(id, "CodeWritingAG" ,domain, llm_name)
-        self.llm = LLMRegistry.get(llm_name)
+        self.llm = LLMRegistry.get(llm_name, agent_id=agent_id)
         self.prompt_set = PromptSetRegistry.get(domain)
         self.role = self.prompt_set.get_role() if role is None else role
         self.constraint = self.prompt_set.get_constraint(self.role) 

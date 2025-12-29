@@ -65,7 +65,7 @@ async def main():
     limit_questions = 153
     
     graph = Graph(domain=args.domain,
-                  llm_name=args.model_type+"/"+args.llm_name,
+                  llm_name=args.llm_name,
                   agent_names=agent_names,
                   decision_method=decision_method,
                   optimized_spatial=args.optimized_spatial,

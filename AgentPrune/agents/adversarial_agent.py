@@ -11,9 +11,9 @@ from AgentPrune.tools.search.wiki import search_wiki_main
 
 @AgentRegistry.register('AdverarialAgent')
 class AdverarialAgent(Node):
-    def __init__(self, id: str | None =None, role:str = None,  domain: str = "", llm_name: str = "",):
+    def __init__(self, id: str | None =None, role:str = None,  domain: str = "", llm_name: str = "", agent_id: int = None):
         super().__init__(id, "AdverarialAgent" ,domain, llm_name)
-        self.llm = LLMRegistry.get(llm_name)
+        self.llm = LLMRegistry.get(llm_name, agent_id=agent_id)
         self.prompt_set = PromptSetRegistry.get(domain)
         self.role = 'Normal' if role is None else role
         self.constraint = self.prompt_set.get_constraint()

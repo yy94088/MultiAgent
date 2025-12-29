@@ -6,6 +6,8 @@ from class_registry import ClassRegistry
 class LLMRegistry:
     registry = ClassRegistry()
     _last_used_gpu = 0
+    _instance_map = {}  # Global mapping table: (model_name, agent_id) -> LLM instance
+    
     @classmethod
     def register(cls, *args, **kwargs):
         return cls.registry.register(*args, **kwargs)
@@ -17,11 +19,24 @@ class LLMRegistry:
     @classmethod
     def get(cls, model_name: Optional[str] = None, agent_id: int = 0) -> LLM:
         """
-        Create an LLM instance.
+        Create or retrieve a cached LLM instance for the given model and agent_id.
+        Each unique (model_name, agent_id) pair gets its own dedicated instance that persists across batches.
         """
+        # Create a unique cache key for this node
+        cache_key = (model_name, agent_id)
+        
+        # Check if instance already exists in the mapping table
+        if cache_key in cls._instance_map:
+            return cls._instance_map[cache_key]
+        
+        # If not exists, create a new instance
         gpu_id = cls._select_optimal_gpu()
         device = f"cuda:{gpu_id}"
-        model = cls.registry.get('Qwen', model_name, device=device)
+        model = cls.registry.get('Qwen3', model_name, device=device)
+        
+        # Store the instance in the mapping table
+        cls._instance_map[cache_key] = model
+        
         return model
     
     @classmethod
