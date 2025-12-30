@@ -29,22 +29,6 @@ class Graph(ABC):
         add_node(node): Adds a new node to the graph with a unique identifier.
         run(inputs, num_steps=10, single_agent=False): Executes the graph for a specified number of steps, processing provided inputs.
     """
-    
-    # Class-level registry: maps (domain, llm_name, agent_name, position) -> unique agent_id
-    _agent_id_registry: Dict[tuple, int] = {}
-    _next_global_agent_id: int = 0
-
-    @classmethod
-    def _get_or_create_agent_id(cls, domain: str, llm_name: str, agent_name: str, position: int) -> int:
-        """
-        Get or create a unique agent_id for the given agent configuration.
-        Ensures that the same agent configuration always gets the same agent_id across different Graph instances.
-        """
-        key = (domain, llm_name, agent_name, position)
-        if key not in cls._agent_id_registry:
-            cls._agent_id_registry[key] = cls._next_global_agent_id
-            cls._next_global_agent_id += 1
-        return cls._agent_id_registry[key]
 
     def __init__(self, 
                 domain: str,
@@ -140,20 +124,11 @@ class Graph(ABC):
     def init_nodes(self):
         """
         Creates and adds new nodes to the graph.
-        Uses global agent_id registry to ensure consistent agent_id assignment across batches.
         """
-        for position, (agent_name, kwargs) in enumerate(zip(self.agent_names, self.node_kwargs)):
+        for agent_name,kwargs in zip(self.agent_names,self.node_kwargs):
             if agent_name in AgentRegistry.registry:
-                # Get or create a globally unique agent_id for this agent configuration
-                agent_id = self._get_or_create_agent_id(
-                    domain=self.domain,
-                    llm_name=self.llm_name,
-                    agent_name=agent_name,
-                    position=position
-                )
                 kwargs["domain"] = self.domain
                 kwargs["llm_name"] = self.llm_name
-                kwargs["agent_id"] = agent_id
                 agent_instance = AgentRegistry.get(agent_name, **kwargs)
                 self.add_node(agent_instance)
     

@@ -104,9 +104,9 @@ async def main():
             break
         
         for i_record, record in enumerate(current_batch):
-            realized_graph = graph.shallow_copy()
-            realized_graph.spatial_logits = graph.spatial_logits.detach().clone()
-            realized_graph.temporal_logits = graph.temporal_logits.detach().clone()
+            realized_graph = copy.deepcopy(graph)
+            realized_graph.spatial_logits = graph.spatial_logits
+            realized_graph.temporal_logits = graph.temporal_logits
             task = record["task"]
             step = record["step"]
             answer = record["answer"]

@@ -9,10 +9,9 @@ from dataset.gsm8k_dataset import gsm_get_predict
 
 @AgentRegistry.register('MathSolverAG')
 class MathSolverAG(NodeAutoGen):
-    def __init__(self, id: str | None =None, role:str = None ,domain: str = "", llm_name: str = "", agent_id: int = None):
+    def __init__(self, id: str | None =None, role:str = None ,domain: str = "", llm_name: str = "",):
         super().__init__(id, "MathSolverAG" ,domain, llm_name)
-        self.agent_id = agent_id
-        self.llm = LLMRegistry.get(llm_name, agent_id=agent_id)
+        self.llm = LLMRegistry.get(llm_name)
         self.prompt_set = PromptSetRegistry.get(domain)
         self.role = self.prompt_set.get_role() if role is None else role
         self.constraint = self.prompt_set.get_constraint(self.role) 
